@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Link Hub</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #090d16; /* Extra Dark Premium Background */
+            min-height: 100vh;
+            padding: 30px 15px;
+            color: #f1f5f9;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: transparent; /* Container background removed for visible gaps */
+            padding: 10px 0px;
+            border-radius: 0;
+            box-shadow: none;
+            border: none;
+        }
+        h1 {
+            text-align: center;
+            color: #38bdf8;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 10px rgba(56, 189, 248, 0.2);
+        }
+        p.subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
+        
+        /* Search Box Premium Styling */
+        .search-container {
+            margin-bottom: 25px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 14px;
+            color: #f1f5f9;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        }
+        .search-input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+        }
+
+        /* File List Container */
+        .file-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Individual File Card */
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 14px;
+            margin-bottom: 20px; /* Gives real visible gap */
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .file-item:hover {
+            transform: translateY(-2px);
+            border-color: #38bdf8;
+            background: #1f2937;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            margin-right: 15px;
+        }
+        .file-icon {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+        }
+        .icon-zip {
+            background-color: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+        }
+        .icon-pdf {
+            background-color: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+        }
+        .icon-doc {
+            background-color: rgba(96, 165, 250, 0.12);
+            color: #60a5fa;
+        }
+        .icon-web {
+            background-color: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+        }
+        .file-name {
+            font-weight: 500;
+            font-size: 14px;
+            color: #e2e8f0;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+        
+        /* Premium Emerald Green Button */
+        .btn-copy {
+            background: #10b981;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.15);
+        }
+        .btn-copy:hover {
+            background: #34d399;
+            box-shadow: 0 6px 15px rgba(52, 211, 153, 0.35);
+        }
+        .btn-copy:active {
+            transform: scale(0.96);
+        }
+        
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 15px 8px; }
+            .container { padding: 10px 4px; }
+            .file-item { padding: 14px 16px; }
+            .file-name { font-size: 13px; }
+            .btn-copy { padding: 8px 12px; font-size: 11px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Google Drive Link Manager</h1>
+    <p class="subtitle">Kisi bhi file ka link copy karne ke liye Copy Link par click karein.</p>
+    
+    <div class="search-container">
+        <input type="text" id="searchBar" class="search-input" placeholder="Search files (e.g., vip, projects, विद्युत, web)..." onkeyup="filterFiles()">
+    </div>
+    
+    <div class="file-list" id="fileList">
+        
+        <!-- A to Z Sequence Auto-arranged -->
+        <div class="file-item" data-keywords="all projects website templates code development github" data-altname="ऑल प्रोजेक्ट्स सारे प्रोजेक्ट वेबसाइट">
+            <div class="file-info">
+                <div class="file-icon icon-web">🌐</div>
+                <div class="file-name">All-projects</div>
+            </div>
+            <button class="btn-copy" data-link="https://satinjangra527-wq.github.io/All-projects/" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="book cover notes kitab cover design">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Book Cover.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1m8VQ9M0E4ZKwOkCqXfh7ufPjTLO3R_cn/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="carbon and its compounds chemistry rasayan vigyan chapter 4 10th class science">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Carbon and its compounds.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1vujxbRxdNkTgdD17eau3TeH6DfHN-x5_/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="class 10th all chapter notes vigyan science pure chapter poorani kaksha dasvi">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Class 10th all chapter notes.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1DiZuA3TsbSsPJU6bBGblkK9IqY0s36Xj/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="class 10th science book notes pdf kaksha dasvi vigyan book">
+            <div class="file-info">
+                <div class="file-icon icon-pdf">📄</div>
+                <div class="file-name">Class 10th science book notes...</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1BDZJwG48n438pK3WGyz6fr82_EzygVwy/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="css class 10th web development html coding style design kaksha dasvi">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">CSS CLASS 10TH.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1z36ac2WxqrdlVA6jRvB4JTjdbRIZldDc/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="mix html file web code design projects application components">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Dairy Website.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1-fyecyxq8rfi6DGgoQijaW3Pb9QiLP_e/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+
+        <div class="file-item" data-keywords="html html zip web design component template website coding">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">HTML.html.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/18C83n6jkxdtz5pDR30q6T-jaQwKPN33V/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+        
+        <div class="file-item" data-keywords="katex zip math equations calculation latex science formula">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">K.html</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1qzx5WezgX6As88_4LRJyY08Xj6Th85rt/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="katex zip math equations calculation latex science formula">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Katex.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1AUgstMGB4sA-TiYqWYt4p4DJxNYuQI8W/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+        
+
+        <div class="file-item" data-keywords="light zip prakash physics bhautik vigyan chapter 10 reflection refraction">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">LIGHT.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1vc2J8sMioreSiFwWhGXgOIvk5XoR-RDL/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="magnetic effect of electric current physics chumbak chumbakiya prabhav">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Magnetic Effect Of Electric Current</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1UviflPJFEYLnd7prHGkFuaRsEyJJ8y0X/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="metal and non metal chemistry dhatu aur adhatu chapter 3 class 10 science">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Metal and non metal.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/15qMCtM2s9oPltx8fRyoSOq5V78opdfy9/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="mix html file web code design projects application components">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">mix html file.zip</div>
+            </div>
+            <button class="btn-copy" data-link="" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+
+        <div class="file-item" data-keywords="my first website home page coding premium marketing responsive">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">MY FIRST WEBSITE.zip</div>
+            </div>
+
+<!-https://drive.google.com/file/d/18rp-CjwD4u1DVU_h02OTh8l8a0OPwn8t/view?usp=drivesdk->
+
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/11uwRcpd75xkUhruKAsPgdlqxx-Usk2Vj/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+
+
+        <div class="file-item" data-keywords="my first tag system custom element science exhibition exhibition project">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">My_First_tag.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1J32iEFPPewNUTxKBaqASBwng8avLfw94/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+
+        <div class="file-item" data-keywords="my first tag system custom element science exhibition exhibition project">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">Projects-promotion</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1rYHugaZa4Fz7hvbHXfkPYYmSsGod55Qe/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+
+        <div class="file-item" data-keywords="vip directory contacts secure list number data phone" data-altname="वीआईपी लिस्ट नंबर कांटेक्ट सुरक्षित डायरेक्टरी">
+            <div class="file-info">
+                <div class="file-icon icon-web">🌐</div>
+                <div class="file-name">Vip-list</div>
+            </div>
+            <button class="btn-copy" data-link="https://satinjangra527-wq.github.io/Vip-list/" onclick="copyLink(this)">Copy Link</button>
+        </div>
+        
+        <div class="file-item" data-keywords="vip directory contacts secure list number data phone" data-altname="वीआईपी लिस्ट नंबर कांटेक्ट सुरक्षित डायरेक्टरी">
+            <div class="file-info">
+                <div class="file-icon icon-web">🌐</div>
+                <div class="file-name">Vip-list-Password</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/18rp-CjwD4u1DVU_h02OTh8l8a0OPwn8t/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+        <div class="file-item" data-keywords="विद्युत vidyut electricity electrical physics current chapter 12 kaksha dasvi">
+            <div class="file-info">
+                <div class="file-icon icon-zip">📦</div>
+                <div class="file-name">विद्युत.zip</div>
+            </div>
+            <button class="btn-copy" data-link="https://drive.google.com/file/d/1jB7KtbsUVd9rcvsgLsc5MfKPwdFqRHZF/view?usp=drivesdk" onclick="copyLink(this)">Copy Link</button>
+        </div>
+
+    </div>
+</div>
+
+<div id="toast" class="toast">📋 Link copy ho gaya!</div>
+
+<script>
+    function filterFiles() {
+        // .trim() handles empty tracking spaces
+        const input = document.getElementById('searchBar').value.toLowerCase().trim();
+        const fileItems = document.querySelectorAll('.file-item');
+
+        fileItems.forEach(item => {
+            const fileName = item.querySelector('.file-name').innerText.toLowerCase();
+            const keywords = item.getAttribute('data-keywords').toLowerCase();
+            
+            // Advance cross-language support mechanism
+            const altName = item.getAttribute('data-altname') ? item.getAttribute('data-altname').toLowerCase() : '';
+
+            // Check match condition across English name, Hindi alternative keywords, and generic keywords
+            if (fileName.includes(input) || keywords.includes(input) || altName.includes(input)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    function copyLink(button) {
+        const linkToCopy = button.getAttribute('data-link');
+        
+        if (!linkToCopy || linkToCopy === "YAHAN_LINK_PASTE_KAREIN") {
+            showToast("⚠️ Link abhi set nahi hai!");
+            return;
+        }
+
+        const dummy = document.createElement('input');
+        document.body.appendChild(dummy);
+        dummy.value = linkToCopy;
+        dummy.select();
+        dummy.setSelectionRange(0, 99999);
+
+        try {
+            navigator.clipboard.writeText(linkToCopy);
+            showToast("📋 Link copy ho gaya!");
+        } catch (err) {
+            document.execCommand('copy');
+            showToast("📋 Link copy ho gaya!");
+        }
+
+        document.body.removeChild(dummy);
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 2500);
+    }
+</script>
+
+</body>
+</html>
