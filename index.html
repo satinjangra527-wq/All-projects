@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="hi" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>रिसोर्स हब - Google Drive & GitHub Panel</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        drive: '#2563eb',
+                        github: '#4f46e5',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #fdf4ff 50%, #f1f5f9 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 20px 40px -15px rgba(37, 99, 235, 0.08);
+        }
+        
+        /* Premium Modern File Card */
+        .white-file-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .white-file-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #ec4899, #8b5cf6);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .white-file-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 35px -10px rgba(59, 130, 246, 0.12);
+            border-color: #93c5fd;
+        }
+        .white-file-card:hover::before {
+            opacity: 1;
+        }
+
+        .transparent-img-fix {
+            mix-blend-mode: multiply;
+        }
+
+        /* Highly Styled & Compact Action Buttons */
+        .action-btn-custom {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            height: 38px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid transparent;
+            text-decoration: none;
+            user-select: none;
+        }
+        .action-btn-custom:active {
+            transform: scale(0.95);
+        }
+
+        /* Open Button Style */
+        .btn-open-custom {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+        .btn-open-custom:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+        }
+
+        /* Copy Button Style */
+        .btn-copy-custom {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+        .btn-copy-custom:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        /* Share Button Style */
+        .btn-share-custom {
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            color: #6d28d9;
+            border-color: #ddd6fe;
+        }
+        .btn-share-custom:hover {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-800 antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between py-3">
+            <div class="flex items-center gap-3.5 cursor-pointer group" onclick="showPanel('main-landing')">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition">
+                    <i class="fa-solid fa-folder-open text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg text-slate-900 tracking-tight leading-tight">रिसोर्स हब</h1>
+                    <p class="text-xs text-blue-600 font-semibold">Digital Resource Portal</p>
+                </div>
+            </div>
+
+            <!-- Navigation Breadcrumb Buttons -->
+            <div class="flex items-center gap-2">
+                <button onclick="showPanel('main-landing')" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50/80 transition flex items-center gap-2 border border-slate-200/60 shadow-sm bg-white">
+                    <i class="fa-solid fa-house text-xs"></i> मुख्य पृष्ठ
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- ================= PANEL 1: MAIN LANDING SCREEN ================= -->
+        <section id="main-landing" class="space-y-12 animate-fade-in">
+            <!-- Welcome Banner -->
+            <div class="text-center max-w-3xl mx-auto space-y-4 pt-4">
+                <span class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-blue-100/80 text-blue-700 border border-blue-200 shadow-inner">
+                    ✨ आपका स्वागत है कुलदीप
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+                    All important study and project files <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">in one place</span>
+                </h2>
+                <p class="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
+                    Click on the Google Drive or GitHub Hub link below to easily manage the relevant folders and projects.
+                </p>
+            </div>
+
+            <!-- Main Hub Gateways (Cards) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto pt-2">
+                
+                <!-- Google Drive Gateway Card -->
+                <div onclick="showPanel('gdrive-panel')" class="glass-card rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer group border-2 border-white hover:border-blue-400 flex flex-col items-center text-center relative overflow-hidden">
+                    <div class="absolute -top-12 -right-12 w-40 h-40 bg-blue-200/40 rounded-full blur-3xl group-hover:bg-blue-300/60 transition"></div>
+                    <div class="w-24 h-24 mb-6 flex items-center justify-center p-3 rounded-2xl bg-white group-hover:scale-110 transition-transform duration-300 shadow-md border border-slate-100 relative z-10">
+                        <img src="google drive.jpg" alt="Google Drive Logo" class="w-full h-full object-contain transparent-img-fix" onerror="this.src='https://placehold.co/100x100/1a73e8/ffffff?text=Drive'">
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 mb-2 relative z-10">Google Drive Hub</h3>
+                    <p class="text-sm text-slate-600 mb-8 flex-grow relative z-10 font-medium">
+                        ZIP फाइल्स, PDF नोट्स, एवं HTML फाइल्स को व्यवस्थित फोल्डर्स में देखें।
+                    </p>
+                    <button class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/25 group-hover:shadow-blue-500/40 flex items-center justify-center gap-2 transition relative z-10">
+                        <span>गूगल ड्राइव पैनल खोलें</span>
+                        <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+
+                <!-- GitHub Gateway Card -->
+                <div onclick="showPanel('github-panel')" class="glass-card rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer group border-2 border-white hover:border-indigo-400 flex flex-col items-center text-center relative overflow-hidden">
+                    <div class="absolute -top-12 -right-12 w-40 h-40 bg-indigo-200/40 rounded-full blur-3xl group-hover:bg-indigo-300/60 transition"></div>
+                    <div class="w-24 h-24 mb-6 flex items-center justify-center p-3 rounded-2xl bg-white group-hover:scale-110 transition-transform duration-300 shadow-md border border-slate-100 relative z-10">
+                        <img src="GitHub pannel.jpg" alt="GitHub Logo" class="w-full h-full object-contain transparent-img-fix" onerror="this.src='https://placehold.co/100x100/4f46e5/ffffff?text=GitHub'">
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-900 mb-2 relative z-10">GitHub Hub</h3>
+                    <p class="text-sm text-slate-600 mb-8 flex-grow relative z-10 font-medium">
+                        लाइव वेब प्रोजेक्ट्स एवं रिपॉजिटरीज देखें एवं एक्सेस करें।
+                    </p>
+                    <button class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 flex items-center justify-center gap-2 transition relative z-10">
+                        <span>गिटहब पैनल खोलें</span>
+                        <i class="fa-solid fa-arrow-right text-sm group-hover:translate-x-1.5 transition-transform"></i>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- ================= PANEL 2: GOOGLE DRIVE PANEL ================= -->
+        <section id="gdrive-panel" class="hidden space-y-8">
+            
+            <!-- Panel Header -->
+            <div class="glass-card rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 border-l-8 border-l-blue-600">
+                <div class="flex items-center gap-5 text-center sm:text-left">
+                    <div class="w-16 h-16 shrink-0 bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center">
+                        <img src="google drive.jpg" alt="Google Drive Logo" class="w-full h-full object-contain transparent-img-fix" onerror="this.src='https://placehold.co/80x80/1a73e8/ffffff?text=Drive'">
+                    </div>
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">Google Drive संग्रहण</h2>
+                        <p class="text-sm text-slate-600 font-medium">श्रेणी अनुसार अपनी आवश्यक फाइल्स चुनें और प्रबंधित करें</p>
+                    </div>
+                </div>
+                <button onclick="showPanel('main-landing')" class="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl font-bold text-sm transition flex items-center gap-2 shadow-sm shrink-0">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> मुख्य पृष्ठ पर लौटें
+                </button>
+            </div>
+
+            <!-- Folder / Category Tabs Navigation -->
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-slate-200 shadow-sm">
+                <!-- All Files Tab with All files.jpg Logo -->
+                <button onclick="switchDriveCategory('all')" id="tab-all" class="drive-tab-btn px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 bg-blue-600 text-white shadow-md shadow-blue-500/20">
+                    <img src="All files.jpg" alt="All Files" class="w-5 h-5 object-contain transparent-img-fix" onerror="this.src='https://placehold.co/20x20/ffffff/1a73e8?text=ALL'">
+                    <span>सभी फाइल्स</span>
+                </button>
+                <button onclick="switchDriveCategory('zip')" id="tab-zip" class="drive-tab-btn px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200">
+                    <img src="Zip.jpg" alt="Zip" class="w-5 h-5 object-contain transparent-img-fix" onerror="this.src='https://placehold.co/20x20/eab308/ffffff?text=ZIP'">
+                    <span>ZIP फाइल्स</span>
+                </button>
+                <button onclick="switchDriveCategory('pdf')" id="tab-pdf" class="drive-tab-btn px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200">
+                    <img src="PDF.jpg" alt="PDF" class="w-5 h-5 object-contain transparent-img-fix" onerror="this.src='https://placehold.co/20x20/ef4444/ffffff?text=PDF'">
+                    <span>PDF दस्तावेज़</span>
+                </button>
+                <button onclick="switchDriveCategory('html')" id="tab-html" class="drive-tab-btn px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200">
+                    <img src="HTML.jpg" alt="HTML" class="w-5 h-5 object-contain transparent-img-fix" onerror="this.src='https://placehold.co/20x20/3b82f6/ffffff?text=HTML'">
+                    <span>HTML फाइल्स</span>
+                </button>
+            </div>
+
+            <!-- Search Filter Bar & Sort by Button Row -->
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+                <div class="relative flex-grow w-full">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-blue-500"></i>
+                    <input type="text" id="drive-search" oninput="filterDriveFiles()" placeholder="फाइल का नाम खोजें..." class="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 shadow-sm text-slate-800 placeholder-slate-400 font-semibold transition">
+                </div>
+                <!-- Sort By Trigger Button -->
+                <button onclick="openSortModal('drive')" class="w-full sm:w-auto px-6 py-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm text-slate-700 shadow-sm flex items-center justify-center gap-2.5 shrink-0 transition">
+                    <i class="fa-solid fa-arrow-down-wide-short text-blue-600"></i>
+                    <span>Sort by</span>
+                </button>
+            </div>
+
+            <!-- Drive Files Grid Container -->
+            <div id="drive-files-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic File Cards Injected Here -->
+            </div>
+
+        </section>
+
+
+        <!-- ================= PANEL 3: GITHUB PANEL ================= -->
+        <section id="github-panel" class="hidden space-y-8">
+            
+            <!-- Panel Header -->
+            <div class="glass-card rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 border-l-8 border-l-indigo-600">
+                <div class="flex items-center gap-5 text-center sm:text-left">
+                    <div class="w-16 h-16 shrink-0 bg-white p-2.5 rounded-2xl shadow-md border border-slate-200 flex items-center justify-center">
+                        <img src="GitHub pannel.jpg" alt="GitHub Logo" class="w-full h-full object-contain transparent-img-fix" onerror="this.src='https://placehold.co/80x80/4f46e5/ffffff?text=GitHub'">
+                    </div>
+                    <div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-slate-900">GitHub प्रोजेक्ट्स</h2>
+                        <p class="text-sm text-slate-600 font-medium">सभी लाइव गिटहब रिपॉजिटरीज एवं वेब एप्लीकेशन</p>
+                    </div>
+                </div>
+                <button onclick="showPanel('main-landing')" class="px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl font-bold text-sm transition flex items-center gap-2 shadow-sm shrink-0">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> मुख्य पृष्ठ पर लौटें
+                </button>
+            </div>
+
+            <!-- GitHub Search Filter Bar & Sort by Button Row -->
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+                <div class="relative flex-grow w-full">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500"></i>
+                    <input type="text" id="github-search" oninput="filterGithubFiles()" placeholder="गिटहब प्रोजेक्ट खोजें..." class="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm text-slate-800 placeholder-slate-400 font-semibold transition">
+                </div>
+                <!-- GitHub Sort By Trigger Button -->
+                <button onclick="openSortModal('github')" class="w-full sm:w-auto px-6 py-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl font-bold text-sm text-slate-700 shadow-sm flex items-center justify-center gap-2.5 shrink-0 transition">
+                    <i class="fa-solid fa-arrow-down-wide-short text-indigo-600"></i>
+                    <span>Sort by</span>
+                </button>
+            </div>
+
+            <!-- GitHub Files Grid Container -->
+            <div id="github-files-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic GitHub Cards Injected Here -->
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ================= SORT BY BOTTOM SHEET MODAL ================= -->
+    <div id="sort-modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300 flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeSortModal()">
+        <div id="sort-modal-content" class="bg-white w-full sm:max-w-md rounded-t-[32px] sm:rounded-3xl p-6 shadow-2xl border border-slate-100 transform translate-y-full sm:translate-y-4 transition-transform duration-300 space-y-5" onclick="event.stopPropagation()">
+            
+            <!-- Modal Header with Top Handle Bar -->
+            <div class="flex flex-col items-center">
+                <div class="w-12 h-1.5 bg-slate-300 rounded-full mb-4 sm:hidden"></div>
+                <div class="w-full flex items-center justify-between">
+                    <h3 class="text-xl font-extrabold text-slate-900">Sort by</h3>
+                    <button onclick="closeSortModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sort Options List -->
+            <div class="space-y-1 pt-1">
+                
+                <!-- Option 1: Newest date first -->
+                <label onclick="selectSortOption('newest')" class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-blue-50/50 cursor-pointer transition group">
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-blue-600">Newest date first</span>
+                    <input type="radio" name="sortOption" value="newest" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 accent-blue-600">
+                </label>
+
+                <!-- Option 2: Oldest date first -->
+                <label onclick="selectSortOption('oldest')" class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-blue-50/50 cursor-pointer transition group">
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-blue-600">Oldest date first</span>
+                    <input type="radio" name="sortOption" value="oldest" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 accent-blue-600">
+                </label>
+
+                <!-- Option 3: Largest first -->
+                <label onclick="selectSortOption('largest')" class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-blue-50/50 cursor-pointer transition group">
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-blue-600">Largest first</span>
+                    <input type="radio" name="sortOption" value="largest" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 accent-blue-600">
+                </label>
+
+                <!-- Option 4: Smallest first -->
+                <label onclick="selectSortOption('smallest')" class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-blue-50/50 cursor-pointer transition group">
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-blue-600">Smallest first</span>
+                    <input type="radio" name="sortOption" value="smallest" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 accent-blue-600">
+                </label>
+
+                <!-- Option 5: Name A -> Z -->
+                <label onclick="selectSortOption('az')" class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-blue-50/50 cursor-pointer transition group">
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-blue-600">Name A → Z</span>
+                    <input type="radio" name="sortOption" value="az" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 accent-blue-600">
+                </label>
+
+                <!-- Option 6: Name Z -> A -->
+                <label onclick="selectSortOption('za')" class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-blue-50/50 cursor-pointer transition group">
+                    <span class="font-bold text-slate-800 text-sm group-hover:text-blue-600">Name Z → A</span>
+                    <input type="radio" name="sortOption" value="za" class="w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500 accent-blue-600">
+                </label>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 backdrop-blur-md border-t border-slate-200 py-6 mt-16">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-slate-500 font-bold">
+            &copy; 2026 रिसोर्स हब पोर्टल - सर्वाधिकार सुरक्षित।
+        </div>
+    </footer>
+
+    <!-- Toast Notification Popup -->
+    <div id="toast-notification" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-white text-slate-900 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3.5 border border-slate-200">
+        <div id="toast-icon-box" class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
+            <i id="toast-icon" class="fa-solid fa-check text-sm"></i>
+        </div>
+        <span id="toast-message" class="text-sm font-bold">सफलतापूर्वक कॉपी हो गया!</span>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Data Store for Google Drive Files
+        const driveFiles = [
+            // ZIP Category
+            { id: 1, title: 'Book Cover.zip', type: 'zip', icon: 'Zip.jpg', size: 15, link: 'https://drive.google.com/file/d/1m8VQ9M0E4ZKwOkCqXfh7ufPjTLO3R_cn/view?usp=drivesdk' },
+            { id: 2, title: 'Carbon and its compounds.zip', type: 'zip', icon: 'Zip.jpg', size: 25, link: 'https://drive.google.com/file/d/1vujxbRxdNkTgdD17eau3TeH6DfHN-x5_/view?usp=drivesdk' },
+            { id: 3, title: 'Class 10th all chapter notes.zip', type: 'zip', icon: 'Zip.jpg', size: 120, link: 'https://drive.google.com/file/d/1zVt9p4sgaS8FXUUppltIoqRTIS8nwOkd/view?usp=drivesdk' },
+            { id: 4, title: 'CSS CLASS 10TH.zip', type: 'zip', icon: 'Zip.jpg', size: 18, link: 'https://drive.google.com/file/d/1z36ac2WxqrdlVA6jRvB4JTjdbRIZldDc/view?usp=drivesdk' },
+            { id: 5, title: 'Dairy Website.zip', type: 'zip', icon: 'Zip.jpg', size: 28, link: 'https://drive.google.com/file/d/1-fyecyxq8rfi6DGgoQijaW3Pb9QiLP_e/view?usp=drivesdk' },
+            { id: 6, title: 'HTML.zip', type: 'zip', icon: 'Zip.jpg', size: 30, link: 'https://drive.google.com/file/d/18C83n6jkxdtz5pDR30q6T-jaQwKPN33V/view?usp=drivesdk' },
+            { id: 7, title: 'JavaScript Notes.zip', type: 'zip', icon: 'Zip.jpg', size: 45, link: 'https://drive.google.com/file/d/1UB01wm83utSlooG3XAbSdx_EATBO4lBY/view?usp=drivesdk' },
+            { id: 8, title: 'Katex.zip', type: 'zip', icon: 'Zip.jpg', size: 10, link: 'https://drive.google.com/file/d/1AUgstMGB4sA-TiYqWYt4p4DJxNYuQI8W/view?usp=drivesdk' },
+            { id: 9, title: 'LIGHT.zip', type: 'zip', icon: 'Zip.jpg', size: 22, link: 'https://drive.google.com/file/d/1vc2J8sMioreSiFwWhGXgOIvk5XoR-RDL/view?usp=drivesdk' },
+            { id: 10, title: 'Magnetic Effect Of Electric Current.zip', type: 'zip', icon: 'Zip.jpg', size: 55, link: 'https://drive.google.com/file/d/1UviflPJFEYLnd7prHGkFuaRsEyJJ8y0X/view?usp=drivesdk' },
+            { id: 11, title: 'Metal and non metal.zip', type: 'zip', icon: 'Zip.jpg', size: 40, link: 'https://drive.google.com/file/d/19RfC8WdZxororfcPZg1spKCeyCK-1m3X/view?usp=drivesdk' },
+            { id: 12, title: 'Mix html file.zip', type: 'zip', icon: 'Zip.jpg', size: 12, link: 'https://drive.google.com/file/d/1aRYJ7xYriAogOhKKS2-31U-zHIVoEoP5/view?usp=drivesdk' },
+            { id: 13, title: 'MY FIRST WEBSITE.zip', type: 'zip', icon: 'Zip.jpg', size: 85, link: 'https://drive.google.com/file/d/11uwRcpd75xkUhruKAsPgdlqxx-Usk2Vj/view?usp=drivesdk' },
+            { id: 14, title: 'My_First_tag.zip', type: 'zip', icon: 'Zip.jpg', size: 8, link: 'https://drive.google.com/file/d/1J32iEFPPewNUTxKBaqASBwng8avLfw94/view?usp=drivesdk' },
+            { id: 15, title: 'Projects-promotion', type: 'zip', icon: 'Zip.jpg', size: 95, link: 'https://drive.google.com/file/d/1rYHugaZa4Fz7hvbHXfkPYYmSsGod55Qe/view?usp=drivesdk' },
+            { id: 16, title: 'Trinkercard.zip', type: 'zip', icon: 'Zip.jpg', size: 14, link: 'https://drive.google.com/file/d/1b21rldiogTUgFAKaqKbQxYgRkB9js5sm/view?usp=drivesdk' },
+            { id: 18, title: 'विद्युत.zip', type: 'zip', icon: 'Zip.jpg', size: 35, link: 'https://drive.google.com/file/d/1jB7KtbsUVd9rcvsgLsc5MfKPwdFqRHZF/view?usp=drivesdk' },
+
+            // PDF Category
+            { id: 19, title: 'Class 10th science book notes', type: 'pdf', icon: 'PDF.jpg', size: 150, link: 'https://drive.google.com/file/d/1BDZJwG48n438pK3WGyz6fr82_EzygVwy/view?usp=drivesdk' },
+            { id: 20, title: 'Class 11th Political Science notes', type: 'pdf', icon: 'PDF.jpg', size: 200, link: 'https://drive.google.com/file/d/1EwVoOJeL9Wijqekn_Ow5lPIBMFZ1aN9Y/view?usp=drivesdk' },
+
+            // HTML Category
+            { id: 21, title: 'Flexbox.html', type: 'html', icon: 'HTML.jpg', size: 5, link: '#' },
+            { id: 22, title: 'K.html', type: 'html', icon: 'HTML.jpg', size: 7, link: 'https://drive.google.com/file/d/1qzx5WezgX6As88_4LRJyY08Xj6Th85rt/view?usp=drivesdk' },
+            { id: 23, title: 'Class 12th letter writing.zip', type: 'zip', icon: 'Zip.jpg', size: 42, link: 'https://drive.google.com/file/d/1MOIaW0CLoEsxSI3XmG5ExlSqD4wUgxhJ/view?usp=drivesdk' },
+            { id: 24, title: 'Sets.zip', type: 'zip', icon: 'Zip.jpg', size: 30, link: 'https://drive.google.com/file/d/1gGRN7OPm6rTU1ksWQGUIf5edDhfEJRdA/view?usp=drivesdk' },
+                        { id: 25, title: 'Trinkercard backup', type: 'html', icon: 'HTML.jpg', size: 15, link: 'https://drive.google.com/file/d/143TvCB6M71sg9TZpfHMb_dHzqreJy-N3/view?usp=drivesdk' },
+            { id: 26, title: 'Color selection system', type: 'html', icon: 'HTML.jpg', size: 10, link: 'https://drive.google.com/file/d/1IlDSwdBmXHWbFATE8TILYXqqgvfnvG4p/view?usp=drivesdk' },
+            { id: 27, title: 'Venn diagram', type: 'html', icon: 'HTML.jpg', size: 12, link: 'https://drive.google.com/file/d/1T6QoYAlX2Oh8bU9akBj3eZf0ixkA1x4j/view?usp=drivesdk' },
+            { id: 28, title: 'Letter', type: 'html', icon: 'HTML.jpg', size: 8, link: 'https://drive.google.com/file/d/1ghsW8gZIVVFjkRZxf2mBllMnFy-uXp0r/view?usp=drivesdk' },
+            { id: 29, title: 'Private', type: 'html', icon: 'HTML.jpg', size: 14, link: 'https://drive.google.com/file/d/1TmmkCcDEqwN-jYsIS6ElXgmHNLeDOfxS/view?usp=drivesdk' },
+            { id: 30, title: 'All projects.zip', type: 'zip', icon: 'Zip.jpg', size: 150, link: 'https://drive.google.com/file/d/1TPO01tW9DCvPPBVEQatxBUn73VzbWKpI/view?usp=drivesdk' },
+            { id: 31, title: 'Class 11th hindi chapter question answer.zip', type: 'zip', icon: 'Zip.jpg', size: 45, link: 'https://drive.google.com/file/d/1BVckdREsmQRBKLEXkm5BlaVsWWfmCBxY/view?usp=drivesdk' },
+
+        ];
+
+        // Data Store for GitHub Projects
+        const githubFiles = [
+            { id: 101, title: 'All-projects', type: 'github', icon: 'GitHub files.png', size: 500, link: 'https://satinjangra527-wq.github.io/All-projects/' },
+            { id: 102, title: 'Vip-list', type: 'github', icon: 'GitHub files.png', size: 120, link: 'https://satinjangra527-wq.github.io/Vip-list-/' },
+            { id: 103, title: 'Vip-list-Password', type: 'github', icon: 'GitHub files.png', size: 80, link: 'https://satinjangra527-wq.github.io/Vip-list-password/' },
+            { id: 104, title: 'Project promotion', type: 'github', icon: 'GitHub files.png', size: 95, link: 'https://satinjangra527-wq.github.io/Projects-promotion/' },
+            { id: 105, title: 'My first website', type: 'github', icon: 'GitHub files.png', size: 85, link: 'https://satinjangra527-wq.github.io/My-first-website/' },
+            { id: 106, title: 'Html', type: 'github', icon: 'GitHub files.png', size: 30, link: 'https://satinjangra527-wq.github.io/Html/' },
+            { id: 107, title: 'CSS', type: 'github', icon: 'GitHub files.png', size: 18, link: 'https://satinjangra527-wq.github.io/CSS/' },
+            { id: 108, title: 'Letter', type: 'github', icon: 'GitHub files.png', size: 25, link: 'https://satinjangra527-wq.github.io/Letter/' },
+            { id: 109, title: 'Sets', type: 'github', icon: 'GitHub files.png', size: 30, link: 'https://satinjangra527-wq.github.io/Sets/' },
+            { id: 110, title: 'Trinkercard', type: 'github', icon: 'GitHub files.png', size: 14, link: 'https://satinjangra527-wq.github.io/Trinkercard/' },
+            { id: 111, title: 'Writing and City Life', type: 'github', icon: 'GitHub files.png', size: 60, link: 'https://satinjangra527-wq.github.io/History-1/' },
+            { id: 112, title: 'An Empire Across Three Continents', type: 'github', icon: 'GitHub files.png', size: 70, link: 'https://satinjangra527-wq.github.io/History/' },
+            { id: 113, title: 'Dairy app', type: 'github', icon: 'GitHub files.png', size: 28, link: 'https://satinjangra527-wq.github.io/Dairy-app/' },
+            { id: 114, title: 'Class 11th hindi chapter question answer', type: 'github', icon: 'GitHub files.png', size: 45, link: 'https://satinjangra527-wq.GitHub.io/Hindi/' },
+
+        ];
+
+        let activeDriveCategory = 'all';
+        // Load saved sort option from localStorage or default to 'newest'
+        let currentSortBy = localStorage.getItem('resourceHubSortBy') || 'newest';
+        let activePanelType = 'drive'; // 'drive' or 'github'
+
+        // Panel Switcher
+        function showPanel(panelId) {
+            document.getElementById('main-landing').classList.add('hidden');
+            document.getElementById('gdrive-panel').classList.add('hidden');
+            document.getElementById('github-panel').classList.add('hidden');
+
+            const target = document.getElementById(panelId);
+            if (target) {
+                target.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            if (panelId === 'gdrive-panel') {
+                activePanelType = 'drive';
+                renderDriveFiles();
+            } else if (panelId === 'github-panel') {
+                activePanelType = 'github';
+                renderGithubFiles();
+            }
+        }
+
+        // Switch Drive Category Folder Tabs
+        function switchDriveCategory(category) {
+            activeDriveCategory = category;
+
+            // Reset Tab styling
+            document.querySelectorAll('.drive-tab-btn').forEach(btn => {
+                btn.className = "drive-tab-btn px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200";
+            });
+
+            // Highlight Active Tab
+            const activeTab = document.getElementById(`tab-${category}`);
+            if (activeTab) {
+                activeTab.className = "drive-tab-btn px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 bg-blue-600 text-white shadow-md shadow-blue-500/20";
+            }
+
+            renderDriveFiles();
+        }
+
+        // Sort Modal Controls
+        function openSortModal(panelType) {
+            activePanelType = panelType;
+            
+            // Sync radio button state with currentSortBy before opening
+            document.querySelectorAll('input[name="sortOption"]').forEach(radio => {
+                radio.checked = (radio.value === currentSortBy);
+            });
+
+            const backdrop = document.getElementById('sort-modal-backdrop');
+            const content = document.getElementById('sort-modal-content');
+            backdrop.classList.remove('hidden');
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('translate-y-full', 'sm:translate-y-4');
+            }, 10);
+        }
+
+        function closeSortModal() {
+            const backdrop = document.getElementById('sort-modal-backdrop');
+            const content = document.getElementById('sort-modal-content');
+            backdrop.classList.add('opacity-0');
+            content.classList.add('translate-y-full', 'sm:translate-y-4');
+            setTimeout(() => {
+                backdrop.classList.add('hidden');
+            }, 300);
+        }
+
+        function selectSortOption(sortType) {
+            currentSortBy = sortType;
+            // Save selection to localStorage
+            localStorage.setItem('resourceHubSortBy', sortType);
+
+            // Update radio check
+            document.querySelectorAll('input[name="sortOption"]').forEach(radio => {
+                radio.checked = (radio.value === sortType);
+            });
+            closeSortModal();
+            
+            if (activePanelType === 'drive') {
+                renderDriveFiles();
+            } else {
+                renderGithubFiles();
+            }
+        }
+
+        // Helper sorting logic
+        function sortItems(arr) {
+            return arr.sort((a, b) => {
+                if (currentSortBy === 'newest') {
+                    return b.id - a.id;
+                } else if (currentSortBy === 'oldest') {
+                    return a.id - b.id;
+                } else if (currentSortBy === 'largest') {
+                    return b.size - a.size;
+                } else if (currentSortBy === 'smallest') {
+                    return a.size - b.size;
+                } else if (currentSortBy === 'az') {
+                    return a.title.localeCompare(b.title);
+                } else if (currentSortBy === 'za') {
+                    return b.title.localeCompare(a.title);
+                }
+                return 0;
+            });
+        }
+
+        // Render Google Drive Files with Sorting & Filtering
+        function renderDriveFiles() {
+            const container = document.getElementById('drive-files-container');
+            const searchVal = document.getElementById('drive-search').value.toLowerCase().trim();
+
+            let filtered = driveFiles.filter(file => {
+                const matchesCategory = (activeDriveCategory === 'all') || (file.type === activeDriveCategory);
+                const matchesSearch = file.title.toLowerCase().includes(searchVal);
+                return matchesCategory && matchesSearch;
+            });
+
+            sortItems(filtered);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-16 text-center text-slate-400 glass-card rounded-3xl">
+                        <i class="fa-regular fa-folder-open text-5xl mb-3 text-blue-500"></i>
+                        <p class="text-base font-bold text-slate-700">कोई फाइल नहीं मिली</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(file => `
+                <div class="white-file-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-3 mb-5">
+                            <!-- Larger & Prominent Icon/Emoji Container -->
+                            <div class="w-20 h-20 rounded-2xl p-3 bg-gradient-to-br from-slate-50 to-blue-50/50 border border-slate-200/80 flex items-center justify-center shrink-0 shadow-sm">
+                                <img src="${file.icon}" alt="${file.type}" class="w-full h-full object-contain transparent-img-fix" onerror="this.src='https://placehold.co/80x80/3b82f6/ffffff?text=FILE'">
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${getTypeBadgeColor(file.type)}">
+                                ${file.type}
+                            </span>
+                        </div>
+                        <!-- Bold File Title -->
+                        <h4 class="font-extrabold text-slate-900 text-lg leading-snug mb-6 line-clamp-2" title="${file.title}">
+                            ${file.title}
+                        </h4>
+                    </div>
+
+                    <!-- Clean & Modern Action Buttons -->
+                    <div class="pt-4 border-t border-slate-100 grid grid-cols-3 gap-2">
+                        <!-- Open Button -->
+                        <button onclick="openLink('${file.link}')" class="action-btn-custom btn-open-custom" title="खोलें">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            <span>OPEN</span>
+                        </button>
+
+                        <!-- Copy Button -->
+                        <button onclick="copyToClipboard('${file.link}')" class="action-btn-custom btn-copy-custom" title="कॉपी करें">
+                            <i class="fa-solid fa-copy text-[10px]"></i>
+                            <span>COPY</span>
+                        </button>
+
+                        <!-- Share Button -->
+                        <button onclick="shareLink('${file.title}', '${file.link}')" class="action-btn-custom btn-share-custom" title="शेयर करें">
+                            <i class="fa-solid fa-share-nodes text-[10px]"></i>
+                            <span>SHARE</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render GitHub Files with Sorting & Filtering
+        function renderGithubFiles() {
+            const container = document.getElementById('github-files-container');
+            const searchVal = document.getElementById('github-search').value.toLowerCase().trim();
+
+            let filtered = githubFiles.filter(file => file.title.toLowerCase().includes(searchVal));
+
+            sortItems(filtered);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-16 text-center text-slate-400 glass-card rounded-3xl">
+                        <i class="fa-regular fa-folder-open text-5xl mb-3 text-indigo-500"></i>
+                        <p class="text-base font-bold text-slate-700">कोई प्रोजेक्ट नहीं मिला</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(file => `
+                <div class="white-file-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-3 mb-5">
+                            <!-- Larger & Prominent Icon/Emoji Container -->
+                            <div class="w-20 h-20 rounded-2xl p-3 bg-gradient-to-br from-slate-50 to-indigo-50/50 border border-slate-200/80 flex items-center justify-center shrink-0 shadow-sm">
+                                <img src="GitHub files.png" alt="GitHub Logo" class="w-full h-full object-contain transparent-img-fix" onerror="this.src='https://placehold.co/80x80/4f46e5/ffffff?text=Git'">
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                Project
+                            </span>
+                        </div>
+                        <!-- Bold File Title -->
+                        <h4 class="font-extrabold text-slate-900 text-lg leading-snug mb-6" title="${file.title}">
+                            ${file.title}
+                        </h4>
+                    </div>
+
+                    <!-- Clean & Modern Action Buttons -->
+                    <div class="pt-4 border-t border-slate-100 grid grid-cols-3 gap-2">
+                        <!-- Open Button -->
+                        <button onclick="openLink('${file.link}')" class="action-btn-custom btn-open-custom" title="खोलें">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            <span>OPEN</span>
+                        </button>
+
+                        <!-- Copy Button -->
+                        <button onclick="copyToClipboard('${file.link}')" class="action-btn-custom btn-copy-custom" title="कॉपी करें">
+                            <i class="fa-solid fa-copy text-[10px]"></i>
+                            <span>COPY</span>
+                        </button>
+
+                        <!-- Share Button -->
+                        <button onclick="shareLink('${file.title}', '${file.link}')" class="action-btn-custom btn-share-custom" title="शेयर करें">
+                            <i class="fa-solid fa-share-nodes text-[10px]"></i>
+                            <span>SHARE</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search Filter triggers
+        function filterDriveFiles() {
+            renderDriveFiles();
+        }
+
+        function filterGithubFiles() {
+            renderGithubFiles();
+        }
+
+        // Helper Badge Color
+        function getTypeBadgeColor(type) {
+            switch(type) {
+                case 'zip': return 'bg-amber-100 text-amber-800 border border-amber-300';
+                case 'pdf': return 'bg-rose-100 text-rose-800 border border-rose-300';
+                case 'html': return 'bg-blue-100 text-blue-800 border border-blue-300';
+                default: return 'bg-slate-100 text-slate-800 border border-slate-300';
+            }
+        }
+
+        // Actions
+        function openLink(url) {
+            if (!url || url === '#') {
+                showToast('लिंक उपलब्ध नहीं है', 'error');
+                return;
+            }
+            window.open(url, '_blank');
+        }
+
+        function copyToClipboard(text) {
+            if (!text || text === '#') {
+                showToast('कॉपी करने के लिए लिंक नहीं है', 'error');
+                return;
+            }
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast('लिंक क्लिपबोर्ड पर कॉपी हो गया!');
+            } catch (err) {
+                showToast('कॉपी करने में विफल', 'error');
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        async function shareLink(title, url) {
+            if (navigator.share && url !== '#') {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: `यहाँ फाइल देखें: ${title}`,
+                        url: url
+                    });
+                } catch (err) {
+                    // User cancelled share
+                }
+            } else {
+                copyToClipboard(url);
+            }
+        }
+
+        // Toast Helper
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast-notification');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIconBox = document.getElementById('toast-icon-box');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = msg;
+
+            if (type === 'error') {
+                toastIconBox.className = "w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold";
+                toastIcon.className = "fa-solid fa-triangle-exclamation text-sm";
+            } else {
+                toastIconBox.className = "w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold";
+                toastIcon.className = "fa-solid fa-check text-sm";
+            }
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize App on load
+        window.onload = function() {
+            // Set initial radio check based on loaded localStorage value
+            document.querySelectorAll('input[name="sortOption"]').forEach(radio => {
+                radio.checked = (radio.value === currentSortBy);
+            });
+            showPanel('main-landing');
+        };
+    </script>
+</body>
+</html>
